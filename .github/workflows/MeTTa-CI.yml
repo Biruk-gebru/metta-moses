@@ -19,21 +19,6 @@ jobs:
         with:
           python-version: '3.12.3'
 
-      - name: Upgrade pip and install Python dependencies
-        run: |
-          python -m venv /home/runner/metta-wam/venv
-          source /home/runner/metta-wam/venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install numpy pyswip janus ansi2html junit2html
-
-      - name: Install SWI-Prolog from PPA
-        run: |
-          sudo apt-get remove -y swi-prolog* || true
-          sudo apt-get update
-          sudo apt-add-repository ppa:swi-prolog/stable -y
-          sudo apt-get update
-          sudo apt-get install -y swi-prolog
-
       - name: Install MeTTaLog (runs INSTALL.sh)
         run: |
           # 1) Clone into $HOME so INSTALL.sh installs here
@@ -51,6 +36,21 @@ jobs:
           # 4) Preserve any other needed environment variables
           echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
           echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
+
+      - name: Upgrade pip and install Python dependencies
+        run: |
+          python -m venv /home/runner/metta-wam/venv
+          source /home/runner/metta-wam/venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install numpy pyswip janus ansi2html junit2html
+
+      - name: Install SWI-Prolog from PPA
+        run: |
+          sudo apt-get remove -y swi-prolog* || true
+          sudo apt-get update
+          sudo apt-add-repository ppa:swi-prolog/stable -y
+          sudo apt-get update
+          sudo apt-get install -y swi-prolog
 
       - name: Install system dependencies for Janus
         run: |
