@@ -88,7 +88,10 @@ jobs:
           which mettalog
           ls -la /home/runner/metta-wam/libraries
 
-      - name: Run MeTTaLog Tests
+      - name: Ensure test script is executable
+        run: chmod +x scripts/run-tests.py
+
+      - name: Run MeTTaLog Tests (with error output)
         run: |
-          which mettalog
-          python3 scripts/run-tests.py
+          set -x
+          python3 -u scripts/run-tests.py || (echo "Test runner failed with exit code $?" && exit 1)
