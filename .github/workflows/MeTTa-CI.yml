@@ -76,6 +76,12 @@ jobs:
           echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
           echo "SWIPL_BOOT_FLAGS=--no-pce" >> $GITHUB_ENV
 
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:/home/runner/metta-wam/python" >> $GITHUB_ENV
+
+      - name: List test files
+        run: find . -name '*test.metta'
+
       - name: Debug mettalog installation
         run: |
           echo "PATH is: $PATH"
