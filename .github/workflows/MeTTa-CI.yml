@@ -50,6 +50,21 @@ jobs:
           echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
           echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
 
+      - name: Install system dependencies for Janus
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpython3-dev libffi-dev
+
+      - name: Set LD_LIBRARY_PATH for Python
+        run: |
+          echo "LD_LIBRARY_PATH=/opt/hostedtoolcache/Python/3.12.3/x64/lib" >> $GITHUB_ENV
+
+      - name: Test Prolog-Python bridge
+        run: |
+          echo "Testing Prolog-Python bridge"
+          python3 -c "import pyswip; print('pyswip OK')"
+          swipl -g "use_module(library(janus)), py_version, halt."
+
       - name: Set PYTHONPATH and PATH for MeTTaLog
         run: |
           PYTHON_VERSION=$(python3 -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')

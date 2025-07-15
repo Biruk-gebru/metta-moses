@@ -10,6 +10,19 @@ import shutil
 
 print('🚀 Starting test script')
 
+print('🔍 Checking Prolog-Python bridge importability...')
+try:
+    import pyswip
+    print('✅ pyswip imported successfully.')
+except Exception as e:
+    print('❌ Failed to import pyswip:', e)
+
+try:
+    import janus
+    print('✅ janus imported successfully.')
+except Exception as e:
+    print('❌ Failed to import janus:', e)
+
 # Define ANSI escape codes for colors
 RESET = "\033[0m"
 BOLD = "\033[1m"
