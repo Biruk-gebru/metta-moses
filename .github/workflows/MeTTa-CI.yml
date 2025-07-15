@@ -21,6 +21,8 @@ jobs:
 
       - name: Upgrade pip and install Python dependencies
         run: |
+          python -m venv /home/runner/metta-wam/venv
+          source /home/runner/metta-wam/venv/bin/activate
           python -m pip install --upgrade pip
           pip install numpy pyswip janus ansi2html junit2html
 
@@ -62,7 +64,7 @@ jobs:
       - name: Test Prolog-Python bridge
         run: |
           echo "Testing Prolog-Python bridge"
-          python3 -c "import pyswip; print('pyswip OK')"
+          /home/runner/metta-wam/venv/bin/python -c "import pyswip; print('pyswip OK')"
           swipl -g "use_module(library(janus)), py_version, halt."
 
       - name: Set PYTHONPATH and PATH for MeTTaLog
