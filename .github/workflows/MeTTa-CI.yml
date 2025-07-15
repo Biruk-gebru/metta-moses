@@ -70,7 +70,7 @@ jobs:
       - name: Minimal Janus bridge test
         run: |
           echo ":- use_module(library(janus))." > test_janus.pl
-          echo ":- initialization((writeln('Calling Python from Prolog...'), py_call('len', [[1,2,3]], X), writeln(X), halt), program)." >> test_janus.pl
+          echo ":- initialization((writeln('Calling Python from Prolog...'), py_call('str', ['hello'], X), writeln(X), halt), program)." >> test_janus.pl
           swipl -q -f test_janus.pl
 
       - name: Set PYTHONPATH and PATH for MeTTaLog
