@@ -50,6 +50,15 @@ jobs:
           echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
           echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
 
+      - name: Set PYTHONPATH and PATH for MeTTaLog
+        run: |
+          PYTHON_VERSION=$(python3 -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')
+          echo "/home/runner/metta-wam/python" >> $GITHUB_PATH
+          echo "/home/runner/metta-wam/venv/bin" >> $GITHUB_PATH
+          echo "PYTHONPATH=/home/runner/metta-wam/python:/home/runner/metta-wam/venv/lib/$PYTHON_VERSION/site-packages" >> $GITHUB_ENV
+          echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
+          echo "SWIPL_BOOT_FLAGS=--no-pce" >> $GITHUB_ENV
+
       - name: Debug mettalog installation
         run: |
           echo "PATH is: $PATH"
