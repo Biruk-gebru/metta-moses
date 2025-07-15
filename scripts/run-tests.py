@@ -1,4 +1,4 @@
-!/usr/bin/env python3
+#!/usr/bin/env python3
 
 import subprocess
 import pathlib
@@ -7,8 +7,6 @@ import re
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import shutil
-
-print("DEBUG: run-tests.py started")
 
 print('🚀 Starting test script')
 
