@@ -83,7 +83,7 @@ def run_test_file(test_file):
             check=False,  # Changed from True to False
             shell=False,
             env=env,
-            
+            timeout=60  # 1 minute timeout per test
         )
 
         return result, test_file, False
