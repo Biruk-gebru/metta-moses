@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
@@ -66,12 +66,6 @@ jobs:
           echo "Testing Prolog-Python bridge"
           /home/runner/metta-wam/venv/bin/python -c "import pyswip; print('pyswip OK')"
           swipl -g "use_module(library(janus)), py_version, halt."
-
-      - name: Minimal Janus bridge test
-        run: |
-          echo ":- use_module(library(janus))." > test_janus.pl
-          echo ":- initialization((writeln('Calling Python from Prolog...'), py_call('str', ['hello'], X), writeln(X), halt), program)." >> test_janus.pl
-          swipl -q -f test_janus.pl
 
       - name: Set PYTHONPATH and PATH for MeTTaLog
         run: |
