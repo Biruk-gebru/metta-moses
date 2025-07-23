@@ -19,6 +19,9 @@ jobs:
         with:  
           python-version: '3.10'  
   
+      - name: Install hyperon-das 0.7.6
+        run: pip install hyperon-das==0.7.6
+
       - name: Install system dependencies  
         run: |  
           sudo apt-get update  
