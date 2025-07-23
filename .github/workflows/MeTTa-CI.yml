@@ -89,9 +89,9 @@ jobs:
           ls -la /home/runner/metta-wam/libraries
 
       - name: Ensure test script is executable
-        run: chmod +x scripts/run-tests.py
+        run: chmod +x scripts/run_metta_tests.py
 
       - name: Run MeTTaLog Tests (with error output)
         run: |
           set -x
-          python3 -u scripts/run-tests.py || (echo "Test runner failed with exit code $?" && exit 1)
+          python3 -u scripts/run_metta_tests.py || (echo "Test runner failed with exit code $?" && exit 1)
