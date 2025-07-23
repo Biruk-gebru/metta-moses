@@ -44,7 +44,11 @@ jobs:
           echo "/home/runner/metta-wam/venv/bin" >> $GITHUB_PATH
           echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
           echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV  
-
+      - name: Install Python dependencies in MeTTaLog venv
+        run: |
+          source /home/runner/metta-wam/venv/bin/activate
+          pip install --upgrade pip
+          pip install pyswip
       - name: Set environment variables  
         run: |  
           echo "METTALOG_DIR=$HOME/metta-wam" >> $GITHUB_ENV  
