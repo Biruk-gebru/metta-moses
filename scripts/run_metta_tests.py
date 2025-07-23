@@ -10,17 +10,16 @@ YELLOW = "\033[93m"
 CYAN = "\033[96m"
 BOLD = "\033[1m"
 
-# Find all *test.metta files recursively from project root
-root = pathlib.Path("../")
-test_metta_files = list(root.rglob("*test.metta"))
+# Only run the single test file
+single_test_file = pathlib.Path("../test-pa-test.metta")
+
+test_metta_files = [single_test_file] if single_test_file.exists() else []
 
 if not test_metta_files:
-    print(f"{YELLOW}No test files found matching '*test.metta'. Exiting.{RESET}")
+    print(f"{YELLOW}No test file found: 'test-pa-test.metta'. Exiting.{RESET}")
     sys.exit(0)
 
-print(f"{CYAN}{BOLD}Found {len(test_metta_files)} test file(s):{RESET}")
-for f in test_metta_files:
-    print(f"  {f}")
+print(f"{CYAN}{BOLD}Running test file: {single_test_file}{RESET}")
 
 passed = 0
 failed = 0

@@ -1,97 +1,68 @@
-name: MeTTaLog CI
-
-on:
-  push:
-    branches: [ref/mettalog]
-  pull_request:
-    branches: [ref/mettalog]
-
-jobs:
-  mettalog-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12.3'
-
-      - name: Install MeTTaLog (runs INSTALL.sh)
-        run: |
-          # 1) Clone into $HOME so INSTALL.sh installs here
-          git clone https://github.com/trueagi-io/metta-wam.git --depth 1 $HOME/metta-wam
-          cd $HOME/metta-wam
-
-          # 2) Run the installer
-          chmod +x ./INSTALL.sh
-          bash -c "source ./INSTALL.sh --allow-system-modifications"
-
-          # 3) Add the real install location to PATH
-          echo "/home/runner/metta-wam"       >> $GITHUB_PATH
-          echo "/home/runner/metta-wam/venv/bin" >> $GITHUB_PATH
-
-          # 4) Preserve any other needed environment variables
-          echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
-          echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
-
-      - name: Upgrade pip and install Python dependencies
-        run: |
-          python -m venv /home/runner/metta-wam/venv
-          source /home/runner/metta-wam/venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install numpy pyswip janus ansi2html junit2html
-
-      - name: Install SWI-Prolog from PPA
-        run: |
-          sudo apt-get remove -y swi-prolog* || true
-          sudo apt-get update
-          sudo apt-add-repository ppa:swi-prolog/stable -y
-          sudo apt-get update
-          sudo apt-get install -y swi-prolog
-
-      - name: Install system dependencies for Janus
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpython3-dev libffi-dev
-
-      - name: Set LD_LIBRARY_PATH for Python
-        run: |
-          echo "LD_LIBRARY_PATH=/opt/hostedtoolcache/Python/3.12.3/x64/lib" >> $GITHUB_ENV
-
-      - name: Test Prolog-Python bridge
-        run: |
-          echo "Testing Prolog-Python bridge"
-          /home/runner/metta-wam/venv/bin/python -c "import pyswip; print('pyswip OK')"
-          swipl -g "use_module(library(janus)), py_version, halt."
-
-      - name: Set PYTHONPATH and PATH for MeTTaLog
-        run: |
-          PYTHON_VERSION=$(python3 -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')
-          echo "/home/runner/metta-wam/python" >> $GITHUB_PATH
-          echo "/home/runner/metta-wam/venv/bin" >> $GITHUB_PATH
-          echo "PYTHONPATH=/home/runner/metta-wam/python:/home/runner/metta-wam/venv/lib/$PYTHON_VERSION/site-packages" >> $GITHUB_ENV
-          echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
-          echo "SWIPL_BOOT_FLAGS=--no-pce" >> $GITHUB_ENV
-
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PYTHONPATH:/home/runner/metta-wam/python" >> $GITHUB_ENV
-
-      - name: List test files
-        run: find . -name '*test.metta'
-
-      - name: Debug mettalog installation
-        run: |
-          echo "PATH is: $PATH"
-          which mettalog
-          ls -la /home/runner/metta-wam/libraries
-
-      - name: Ensure test script is executable
-        run: chmod +x scripts/run_metta_tests.py
-
-      - name: Run MeTTaLog Tests (with error output)
-        run: |
-          set -x
-          python3 -u scripts/run_metta_tests.py || (echo "Test runner failed with exit code $?" && exit 1)
+name: MeTTaLog CI  
+  
+on:  
+  push:  
+    branches: [ref/mettalog]  
+  pull_request:  
+    branches: [ref/mettalog]  
+  
+jobs:  
+  mettalog-test:  
+    runs-on: ubuntu-latest  
+  
+    steps:  
+      - name: Checkout repository  
+        uses: actions/checkout@v4  
+  
+      - name: Set up Python 3.12  
+        uses: actions/setup-python@v4  
+        with:  
+          python-version: '3.12.3'  
+  
+      - name: Install system dependencies  
+        run: |  
+          sudo apt-get update  
+          sudo apt-get install -y libpython3-dev libffi-dev build-essential  
+  
+      - name: Install SWI-Prolog from PPA  
+        run: |  
+          sudo apt-get remove -y swi-prolog* || true  
+          sudo apt-add-repository ppa:swi-prolog/stable -y  
+          sudo apt-get update  
+          sudo apt-get install -y swi-prolog  
+  
+      - name: Clone and install MeTTaLog  
+        run: |  
+          git clone https://github.com/trueagi-io/metta-wam.git --depth 1 $HOME/metta-wam  
+          cd $HOME/metta-wam  
+          chmod +x ./INSTALL.sh  
+          source ./INSTALL.sh --allow-system-modifications --easy  
+  
+      - name: Set environment variables  
+        run: |  
+          echo "METTALOG_DIR=$HOME/metta-wam" >> $GITHUB_ENV  
+          echo "METTALOG_INTERP=$HOME/metta-wam/prolog/metta_lang" >> $GITHUB_ENV  
+          echo "SWIPL_BOOT_FLAGS=--no-pce" >> $GITHUB_ENV  
+          echo "$HOME/metta-wam" >> $GITHUB_PATH  
+          echo "$HOME/metta-wam/venv/bin" >> $GITHUB_PATH  
+            
+          # Set Python path for py-atom functionality  
+          PYTHON_VERSION=$(python3 -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')  
+          echo "PYTHONPATH=$HOME/metta-wam/python:$HOME/metta-wam/venv/lib/$PYTHON_VERSION/site-packages" >> $GITHUB_ENV  
+  
+      - name: Verify installation  
+        run: |  
+          source $HOME/metta-wam/venv/bin/activate  
+          echo "Testing Python-Prolog bridge..."  
+          python -c "import pyswip; print('pyswip OK')"  
+          swipl -g "use_module(library(janus)), py_version, halt."  
+            
+          echo "Testing mettalog..."  
+          which mettalog  
+          mettalog --version  
+  
+      - name: Run tests  
+        run: |  
+          cd $HOME/metta-wam  
+          source venv/bin/activate  
+          python3 -u scripts/run_metta_tests.py
