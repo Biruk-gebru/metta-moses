@@ -34,13 +34,17 @@ jobs:
           sudo apt-get update  
           sudo apt-get install -y swi-prolog  
   
-      - name: Clone and install MeTTaLog  
-        run: |  
-          git clone https://github.com/trueagi-io/metta-wam.git --depth 1 $HOME/metta-wam  
-          cd $HOME/metta-wam  
-          chmod +x ./INSTALL.sh  
-          source ./INSTALL.sh --allow-system-modifications --easy  
-  
+      - name: Install MeTTaLog (runs INSTALL.sh)
+        run: |
+          git clone https://github.com/trueagi-io/metta-wam.git --depth 1 $HOME/metta-wam
+          cd $HOME/metta-wam
+          chmod +x ./INSTALL.sh
+          bash -c "source ./INSTALL.sh --allow-system-modifications"
+          echo "/home/runner/metta-wam"       >> $GITHUB_PATH
+          echo "/home/runner/metta-wam/venv/bin" >> $GITHUB_PATH
+          echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
+          echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV  
+
       - name: Set environment variables  
         run: |  
           echo "METTALOG_DIR=$HOME/metta-wam" >> $GITHUB_ENV  
