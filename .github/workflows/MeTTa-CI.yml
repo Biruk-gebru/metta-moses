@@ -1,62 +1,79 @@
-name: MeTTaLog CI
+name: MeTTaLog CI  
+  
+on:  
+  push:  
+    branches: [ref/mettalog]  
+  pull_request:  
+    branches: [ref/mettalog]  
+  
+jobs:  
+  mettalog-test:  
+    runs-on: ubuntu-latest  
+  
+    steps:  
+      - name: Checkout repository  
+        uses: actions/checkout@v4  
+  
+      - name: Set up Python 3.12  
+        uses: actions/setup-python@v4  
+        with:  
+          python-version: '3.12'  
+  
+      # - name: Install hyperon-das 0.7.6
+      #   run: pip install hyperon-das==0.7.6
 
-on:
-  push:
-    branches: [ref/mettalog]
-  pull_request:
-    branches: [ref/mettalog]
-
-jobs:
-  mettalog-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12.3'
-
-      - name: Upgrade pip and install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install numpy pyswip janus ansi2html junit2html
-
-      - name: Install SWI-Prolog from PPA
-        run: |
-          sudo apt-get remove -y swi-prolog* || true
-          sudo apt-get update
-          sudo apt-add-repository ppa:swi-prolog/stable -y
-          sudo apt-get update
-          sudo apt-get install -y swi-prolog
-
+      - name: Install system dependencies  
+        run: |  
+          sudo apt-get update  
+          sudo apt-get install -y libpython3-dev libffi-dev build-essential  
+  
+      - name: Install SWI-Prolog from PPA  
+        run: |  
+          sudo apt-get remove -y swi-prolog* || true  
+          sudo apt-add-repository ppa:swi-prolog/stable -y  
+          sudo apt-get update  
+          sudo apt-get install -y swi-prolog  
+  
       - name: Install MeTTaLog (runs INSTALL.sh)
         run: |
-          # 1) Clone into $HOME so INSTALL.sh installs here
           git clone https://github.com/trueagi-io/metta-wam.git --depth 1 $HOME/metta-wam
           cd $HOME/metta-wam
-
-          # 2) Run the installer
           chmod +x ./INSTALL.sh
           bash -c "source ./INSTALL.sh --allow-system-modifications"
-
-          # 3) Add the real install location to PATH
           echo "/home/runner/metta-wam"       >> $GITHUB_PATH
           echo "/home/runner/metta-wam/venv/bin" >> $GITHUB_PATH
-
-          # 4) Preserve any other needed environment variables
           echo "SWIPL_BOOT_FLAGS=--no-pce"        >> $GITHUB_ENV
-          echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV
-
-      - name: Debug mettalog installation
+          echo "METTALOG_DIR=/home/runner/metta-wam" >> $GITHUB_ENV  
+      - name: Install Python dependencies in MeTTaLog venv
         run: |
-          echo "PATH is: $PATH"
-          which mettalog
-          ls -la /home/runner/metta-wam/libraries
-
-      - name: Run MeTTaLog Tests
-        run: |
-          which mettalog
-          python3 scripts/run-tests.py
+          source /home/runner/metta-wam/venv/bin/activate
+          pip install --upgrade pip
+          pip install pyswip
+      - name: Set environment variables  
+        run: |  
+          echo "METTALOG_DIR=$HOME/metta-wam" >> $GITHUB_ENV  
+          echo "METTALOG_INTERP=$HOME/metta-wam/prolog/metta_lang" >> $GITHUB_ENV  
+          echo "SWIPL_BOOT_FLAGS=--no-pce" >> $GITHUB_ENV  
+          echo "$HOME/metta-wam" >> $GITHUB_PATH  
+          echo "$HOME/metta-wam/venv/bin" >> $GITHUB_PATH  
+            
+          # Set Python path for py-atom functionality  
+          PYTHON_VERSION=$(python3 -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')  
+          echo "PYTHONPATH=$HOME/metta-wam/python:$HOME/metta-wam/venv/lib/$PYTHON_VERSION/site-packages" >> $GITHUB_ENV  
+  
+      - name: Verify installation  
+        run: |  
+          source $HOME/metta-wam/venv/bin/activate  
+          echo "Testing Python-Prolog bridge..."  
+          python -c "import pyswip; print('pyswip OK')"  
+          swipl -g "use_module(library(janus)), py_version, halt."  
+            
+          echo "Testing mettalog..."  
+          which mettalog  
+          mettalog --version  
+  
+      - name: Run tests  
+        run: |  
+          # cd $HOME/metta-wam  
+          source /home/runner/metta-wam/venv/bin/activate  
+          python3 -u scripts/run_metta_tests.py

@@ -10,6 +10,19 @@ import shutil
 
 print('🚀 Starting test script')
 
+print('🔍 Checking Prolog-Python bridge importability...')
+try:
+    import pyswip
+    print('✅ pyswip imported successfully.')
+except Exception as e:
+    print('❌ Failed to import pyswip:', e)
+
+try:
+    import janus
+    print('✅ janus imported successfully.')
+except Exception as e:
+    print('❌ Failed to import janus:', e)
+
 # Define ANSI escape codes for colors
 RESET = "\033[0m"
 BOLD = "\033[1m"
@@ -45,7 +58,12 @@ def extract_and_print(result, path, idx) -> bool:
 
     status_color = RED if has_failure else GREEN
     print(YELLOW + f"Test {idx + 1}: {path}" + RESET)
-    print(status_color + extracted + RESET)
+    if not has_failure:
+        if extracted.strip():
+            print(GREEN + extracted.strip() + RESET)
+        print(GREEN + "test passed" + RESET)
+    else:
+        print(RED + extracted.strip() + RESET)
     print(YELLOW + f"Exit-code: {result.returncode}" + RESET)
     print("-" * 40)
 
@@ -70,7 +88,7 @@ def run_test_file(test_file):
             check=False,  # Changed from True to False
             shell=False,
             env=env,
-            
+            timeout=60  # 1 minute timeout per test
         )
 
         return result, test_file, False
@@ -119,6 +137,8 @@ testMettaFiles = list(root.rglob("*test.metta"))
 total_files = len(testMettaFiles)
 results = []
 fails = 0
+passed_tests = []
+failed_tests = []
 
 if total_files == 0:
     print("⚠️  No test files found matching pattern '*test.metta'")
@@ -138,28 +158,36 @@ with ThreadPoolExecutor() as executor:
         idx = future_to_test[future]
         try:
             result, path, has_failure = future.result()
-            
-            # Since we're no longer using check=True, we won't get CalledProcessError
-            # Just check if the result is valid
             if result is None:
                 print(RED + f"Error with {path}: No result returned" + RESET)
                 fails += 1
+                failed_tests.append(str(path))
                 continue
-
-            # Extract and print results
             has_failure = extract_and_print(result, path, idx)
             if has_failure:
                 fails += 1
-
+                failed_tests.append(str(path))
+            else:
+                passed_tests.append(str(path))
         except Exception as exc:
             print(RED + f"Test {idx + 1}: generated an exception: {exc}" + RESET)
             fails += 1
+            failed_tests.append(str(path))
 
 # Summary
 print(CYAN + "\nTest Summary" + RESET)
 print(f"{total_files} files tested.")
 print(RED + f"{fails} failed." + RESET)
 print(GREEN + f"{total_files - fails} succeeded." + RESET)
+
+if passed_tests:
+    print(GREEN + BOLD + "\nPassed tests:" + RESET)
+    for test in passed_tests:
+        print(GREEN + f"  ✔ {test}" + RESET)
+if failed_tests:
+    print(RED + BOLD + "\nFailed tests:" + RESET)
+    for test in failed_tests:
+        print(RED + f"  ✖ {test}" + RESET)
 
 if fails > 0:
     print(RED + "Tests failed. Process Exiting with exit code 1" + RESET)
