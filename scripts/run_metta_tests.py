@@ -11,7 +11,7 @@ CYAN = "\033[96m"
 BOLD = "\033[1m"
 
 # Only run the single test file
-single_test_file = pathlib.Path("../test-pa-test.metta")
+single_test_file = pathlib.Path("test-pa-test.metta")
 
 test_metta_files = [single_test_file] if single_test_file.exists() else []
 
